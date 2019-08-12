@@ -39,7 +39,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .tokenEndpoint()
                 .accessTokenResponseClient(accessTokenResponseClient())
                 .and()
-                .defaultSuccessUrl("/loginSuccess")
+                .defaultSuccessUrl("/loginSuccess", true)
                 .failureUrl("/loginFailure");
 
         }

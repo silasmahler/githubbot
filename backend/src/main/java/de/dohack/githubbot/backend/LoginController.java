@@ -46,6 +46,14 @@ public class LoginController {
         return "oauth_login";
     }
 
+    @GetMapping("/securedPage")
+    public String getSecuredPage(Model model, OAuth2AuthenticationToken authentication){
+
+        //TODO sth. with the Model or Data
+        
+        return "securedPage";
+    }
+
     @GetMapping("/loginSuccess")
     public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
 
@@ -66,7 +74,7 @@ public class LoginController {
 
             ResponseEntity<Map> response = restTemplate.exchange(userInfoEndpointUri, HttpMethod.GET, entity, Map.class);
             Map userAttributes = response.getBody();
-            System.out.println(userAttributes.toString());
+            //System.out.println(userAttributes.toString());
             model.addAttribute("name", userAttributes.get("name"));
             model.addAttribute("email", userAttributes.get("email"));
 
