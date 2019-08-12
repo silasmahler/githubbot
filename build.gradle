@@ -1,0 +1,28 @@
+defaultTasks 'build'
+
+wrapper {
+    description "Regenerates the Gradle Wrapper files"
+    gradleVersion = '5.4.1'
+    distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+configure([project(':backend')]) {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+}
+configure([project(':frontend')]) {
+
+}
+
+
+
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+subprojects {
+    version = '0.0.1'
+}
