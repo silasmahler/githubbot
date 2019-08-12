@@ -17,6 +17,7 @@ apply plugin: 'com.moowork.node' // gradle-node-plugin
 node {
     /* gradle-node-plugin configuration
        https://github.com/srs/gradle-node-plugin/blob/master/docs/node.md
+
        Task name pattern:
        ./gradlew npm_<command> Executes an NPM command.
     */
@@ -42,16 +43,16 @@ npm_run_build {
     inputs.file 'package.json'
     inputs.file 'package-lock.json'
 
-    outputs.dir 'build'
+    outputs.dir 'dist'
 }
 
 // pack output of the build into JAR file
 task packageNpmApp(type: Zip) {
     dependsOn npm_run_build
-    baseName 'npm-app'
+    baseName 'frontend'
     extension 'jar'
     destinationDir file("${projectDir}/build_packageNpmApp")
-    from('build') {
+    from('dist') {
         // optional path under which output will be visible in Java classpath, e.g. static resources path
         into 'static'
     }

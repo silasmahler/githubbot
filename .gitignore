@@ -8,3 +8,5 @@ githubbot\.zip
 \.vscode/
 
 package-lock\.json
+
+.gradle

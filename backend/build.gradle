@@ -2,7 +2,9 @@ plugins {
 	id 'org.springframework.boot' version '2.1.7.RELEASE'
 	id 'java'
 }
-
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 group = 'de.dohack.githubbot'
@@ -21,7 +23,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	//implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 	//OAuth
 	implementation "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:$oauthAutoVersion"
