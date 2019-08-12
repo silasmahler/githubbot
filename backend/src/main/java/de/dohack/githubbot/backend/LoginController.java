@@ -50,15 +50,17 @@ public class LoginController {
     public String getSecuredPage(Model model, OAuth2AuthenticationToken authentication){
 
         //TODO sth. with the Model or Data
-        
+
         return "securedPage";
     }
 
     @GetMapping("/loginSuccess")
     public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
 
+        //Get Client corresponding to user token
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(), authentication.getName());
 
+        //Send request to client users info endpoint and retrieve userAttributes Map
         String userInfoEndpointUri = client.getClientRegistration()
                 .getProviderDetails()
                 .getUserInfoEndpoint()
