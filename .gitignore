@@ -10,3 +10,6 @@ githubbot\.zip
 package-lock\.json
 
 .gradle
+/frontend/node_modules/
+/frontend/frontend.iml
+/.gradle/

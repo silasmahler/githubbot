@@ -1,18 +1,21 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
-  </div>
+  <h3>Home Page</h3>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+<script>
+  import { mapState, mapActions } from 'vuex';
 
-@Component({
-  components: {
-    HelloWorld,
-  },
-})
-export default class Home extends Vue {}
+  export default {
+    name: 'app',
+    computed: {
+      ...mapState({
+        alert: (state) => state.alert,
+      })
+    },
+    methods: {
+      ...mapActions({
+        clearAlert: 'alert/clear',
+      })
+    }
+  };
 </script>

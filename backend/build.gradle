@@ -23,8 +23,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
-	//implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 	//OAuth
 	implementation "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:$oauthAutoVersion"
 	implementation "org.springframework.security:spring-security-oauth2-client"
@@ -36,5 +34,5 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	//Frontend as dependency
-	runtimeOnly project(':frontend')
+//	runtimeOnly project(':frontend')
 }
