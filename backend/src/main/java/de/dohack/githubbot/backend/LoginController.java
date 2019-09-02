@@ -1,110 +1,96 @@
 package de.dohack.githubbot.backend;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ResolvableType;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.security.Principal;
 import java.util.Map;
 
-@RestController
-@CrossOrigin(origins = "http://localhost:8081")
+@Controller
 public class LoginController {
 
-    private static final String authorizationRequestBaseUri = "oauth2/authorize-client";
-    private Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
-
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final OAuth2AuthorizedClientService authorizedClientService;
-
-    @Autowired
-    public LoginController(ClientRegistrationRepository clientRegistrationRepository, OAuth2AuthorizedClientService authorizedClientService) {
-        this.clientRegistrationRepository = clientRegistrationRepository;
-        this.authorizedClientService = authorizedClientService;
+    @GetMapping(path = {"/", "/index"})
+    public String getIndexPage(Principal principal, Model model) {
+        String username = setUsername(principal);
+        model.addAttribute("username", username);
+        return "index";
     }
 
-    @PostMapping("/login")
-    public boolean login(@RequestBody User user) {
-        System.out.println(user);
-        return true;
+    @GetMapping("/createRepository")
+    public String getCreateRepositoryPage(Principal principal, Model model) {
+        String username = setUsername(principal);
+        model.addAttribute("username", username);
+
+        Repository repository = new Repository();
+        repository.setCreator(username);
+        model.addAttribute("repository", repository);
+        return "createRepository";
     }
 
+    @PostMapping("/createRepository")
+    public Repository createRepository(@ModelAttribute Repository repository) {
+        // TODO create @repository on GitHub:
+        //   check if repoName is not already in use
+        //   add creator and teammates to GitHub Organisation
+        //   create @repository from template repository
+        //   if @repository is created successfully, set created property of @repository to true
+        //   return @repository
+        System.out.println(repository);
+//        /repos/:template_owner/:template_repo/generate
 
-
-
-
-
-
-    @GetMapping("/oauth_login")
-    public String getLoginPage(Model model) {
-        Iterable<ClientRegistration> clientRegistrations = null;
-        ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository)
-                .as(Iterable.class);
-        if (type != ResolvableType.NONE && ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
-            clientRegistrations = (Iterable<ClientRegistration>) clientRegistrationRepository;
+        if (!"".equals(repository.getTeammateOne()) && checkUsername(repository.getTeammateOne())) {
+            // TODO add teammateOne as collaborator
+        }
+        if (!"".equals(repository.getTeammateTwo()) && checkUsername(repository.getTeammateTwo())) {
+            // TODO add teammateTwo as collaborator
+        }
+        if (!"".equals(repository.getTeammateThree()) && checkUsername(repository.getTeammateThree())) {
+            // TODO add teammateThree as collaborator
+        }
+        if (!"".equals(repository.getTeammateFour()) && checkUsername(repository.getTeammateFour())) {
+            // TODO add teammateFour as collaborator
         }
 
-        clientRegistrations.forEach(registration -> oauth2AuthenticationUrls.put(registration.getClientName(), authorizationRequestBaseUri + "/" + registration.getRegistrationId()));
-        model.addAttribute("urls", oauth2AuthenticationUrls);
-
-        return "oauth_login";
+        return repository;
     }
 
-    @GetMapping("/securedPage")
-    public String getSecuredPage(Model model, OAuth2AuthenticationToken authentication){
-
-        //TODO sth. with the Model or Data
-
-        return "securedPage";
-    }
-
-    @GetMapping("/loginSuccess")
-    public String getLoginInfo(Model model, OAuth2AuthenticationToken authentication) {
-
-        //Get Client corresponding to user token
-        OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(authentication.getAuthorizedClientRegistrationId(), authentication.getName());
-
-        //Send request to client users info endpoint and retrieve userAttributes Map
-        String userInfoEndpointUri = client.getClientRegistration()
-                .getProviderDetails()
-                .getUserInfoEndpoint()
-                .getUri();
-
-        if (!StringUtils.isEmpty(userInfoEndpointUri)) {
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + client.getAccessToken()
-                    .getTokenValue());
-
-            HttpEntity<String> entity = new HttpEntity<String>("", headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(userInfoEndpointUri, HttpMethod.GET, entity, Map.class);
-            Map userAttributes = response.getBody();
-            //System.out.println(userAttributes.toString());
-            model.addAttribute("name", userAttributes.get("name"));
-            model.addAttribute("email", userAttributes.get("email"));
-
+    private String setUsername(Principal principal) {
+        String username = "anonymous";
+        if (principal != null) {
+            OAuth2AuthenticationToken token = ((OAuth2AuthenticationToken) principal);
+            username = token.getPrincipal().getAttributes().get("login").toString();
         }
-
-        return "loginSuccess";
+        return username;
     }
+
+    private boolean checkUsername(String username) {
+        String urlOverHttps = "https://api.github.com/users/" + username;
+        ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, null, String.class);
+
+        if (response.getStatusCode().equals(HttpStatus.OK)) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                Map<String, Object> map = mapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
+                });
+                return map.get("login").toString().equals(username);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return false;
+    }
+
 
 }

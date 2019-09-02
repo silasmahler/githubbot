@@ -22,16 +22,21 @@ ext{
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	//OAuth
-	implementation "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:$oauthAutoVersion"
-	implementation "org.springframework.security:spring-security-oauth2-client"
-	implementation "org.springframework.security:spring-security-oauth2-jose"
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-devtools'
 
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	testImplementation 'org.springframework:spring-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	//OAuth
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-oauth2-client'
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+
+	//	implementation "org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:$oauthAutoVersion"
+//	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+//	testImplementation 'org.springframework:spring-test'
+//	testImplementation 'org.springframework.security:spring-security-test'
+//	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
 	//Frontend as dependency
 //	runtimeOnly project(':frontend')
