@@ -13,3 +13,4 @@ package-lock\.json
 /frontend/node_modules/
 /frontend/frontend.iml
 /.gradle/
+/backend/src/main/resources/secretConfig.properties

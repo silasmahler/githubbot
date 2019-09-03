@@ -2,6 +2,9 @@ package de.dohack.githubbot.backend;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +22,13 @@ import java.util.Map;
 
 @Controller
 public class LoginController {
+
+    private final Bearer secretConfig;
+
+    @Autowired
+    public LoginController(Bearer bearer) {
+        this.secretConfig = bearer;
+    }
 
     @GetMapping(path = {"/", "/index"})
     public String getIndexPage(Principal principal, Model model) {
@@ -47,6 +57,8 @@ public class LoginController {
         //   if @repository is created successfully, set created property of @repository to true
         //   return @repository
         System.out.println(repository);
+        inviteUserToOrganization(repository.getCreator());
+
 //        /repos/:template_owner/:template_repo/generate
 
         if (!"".equals(repository.getTeammateOne()) && checkUsername(repository.getTeammateOne())) {
@@ -90,6 +102,31 @@ public class LoginController {
             }
         }
         return false;
+    }
+
+
+    /**
+     * To prevent abuse, the authenticated user is limited to 50 organization invitations per 24 hour period. If the
+     * organization is more than one month old or on a paid plan, the limit is 500 invitations per 24 hour period.
+     * @param username
+     */
+    private void inviteUserToOrganization(String username) {
+        //        curl --user "groupowner:password" -X PUT -d "" "https://api.github.com/teams/TEAMID/memberships/USERNAMETOBEADDED"
+
+//        String urlOverHttps = "https://api.github.com/org/dohack-githubbot/memberships/jo2";
+        String urlOverHttps = "https://api.github.com/orgs/dohack-githubbot/members";
+
+        System.out.println(secretConfig.getBearer());
+        HttpHeaders headers = new HttpHeaders() {{
+            String token = "Bearer " + secretConfig.getBearer();
+            set( "Authorization", token );
+        }};
+
+//                456ba9cff1ca3625d133820599fe2df2e3140fe3
+        ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(headers), String.class);
+
+        System.out.println(response);
+
     }
 
 
