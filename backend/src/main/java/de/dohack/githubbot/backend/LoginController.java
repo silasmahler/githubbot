@@ -122,7 +122,6 @@ public class LoginController {
             set( "Authorization", token );
         }};
 
-//                456ba9cff1ca3625d133820599fe2df2e3140fe3
         ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(headers), String.class);
 
         System.out.println(response);
