@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub bot</title>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <style>
+        a {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse container" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Home</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" href="/createRepository">Create Repository</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav my-2 my-lg-0">
+                <li class="nav-item" sec:authorize="!isAuthenticated()">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <span class="navbar-text" th:text="${username}"></span>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a class="nav-link" href="/logout">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="jumbotron">
+        <div class="container">
+            <div class="row">
+                <h1>GitHub Bot for DO!Hack 2019</h1>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div sec:authorize="isAuthenticated()">
+            <h3>Repository Creation Successful</h3>
+            <p th:text="'Repository Name: ' + ${repository.repoName}"></p>
+            <p th:text="'Description: ' + ${repository.description}"></p>
+            <p>Every GitHub account listed below should have got an invitation to join the DO!Hack GitHub
+                organization and your repository <span th:text="${repository.repoName}"></span>. Use this URL to see
+                your repository after accepting the invitations:
+                <a th:href="${repository.url}" th:text="${repository.url}"></a></p>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Teammate</th>
+                    <th>Organisation Invitation</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row" th:text="${repository.creator}">Creator</th>
+                    <td th:text="${invitationStates.creator}"></td>
+                </tr>
+                <tr th:if="${repository.teammateOne != null}">
+                    <th scope="row" th:text="${repository.teammateOne}">Teammate 1</th>
+                    <td th:text="${invitationStates.teammateOne}"></td>
+                </tr>
+                <tr th:if="${repository.teammateTwo != null}">
+                    <th scope="row" th:text="${repository.teammateTwo}">Teammate 2</th>
+                    <td th:text="${invitationStates.teammateTwo}"></td>
+                </tr>
+                <tr th:if="${repository.teammateThree != null}">
+                    <th scope="row" th:text="${repository.teammateThree}">Teammate 3</th>
+                    <td th:text="${invitationStates.teammateThree}"></td>
+                </tr>
+                <tr th:if="${repository.teammateFour != null}">
+                    <th scope="row" th:text="${repository.teammateFour}">Teammate 4</th>
+                    <td th:text="${invitationStates.teammateFour}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

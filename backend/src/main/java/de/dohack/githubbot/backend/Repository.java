@@ -10,6 +10,7 @@ public class Repository {
     private String teammateFour;
     private String description;
     private boolean created;
+    private String url;
 
     public Repository() {
         this.created = false;
@@ -79,6 +80,14 @@ public class Repository {
         this.created = created;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
     @Override
     public String toString() {
         return "Repository{" +
@@ -90,6 +99,7 @@ public class Repository {
                 ", teammateFour='" + teammateFour + '\'' +
                 ", description='" + description + '\'' +
                 ", created='" + created + '\'' +
+                ", url='" + url + '\'' +
                 '}';
     }
 }

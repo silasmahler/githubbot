@@ -31,7 +31,7 @@
                     <a class="nav-link" href="/login">Login</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
-                    <span class="navbar-text" sec:authentication="name"></span>
+                    <span class="navbar-text" th:text="${username}"></span>
                 </li>
                 <li class="nav-item" sec:authorize="isAuthenticated()">
                     <a class="nav-link" href="/logout">Logout</a>
@@ -53,12 +53,17 @@
                 <!-- Form Name -->
                 <legend>Repository Registration Form</legend>
 
+                <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                    <p th:each="err : ${#fields.errors('*')}" th:text="${err}"></p>
+                </div>
+
                 <!-- Text input-->
                 <div class="form-group">
                     <label class="col-md-4 control-label" for="repoName">Team and Repository Name</label>
                     <div class="col-md-8">
                         <input id="repoName" th:field="*{repoName}" type="text" placeholder="Team and Repository Name" class="form-control input-md" required="">
                     </div>
+                    <span class="error" th:if="${#fields.hasErrors('repoName')}" th:errors="*{repoName}"></span>
                 </div>
 
                 <!-- Textarea -->
@@ -73,7 +78,7 @@
                 <div class="form-group">
                     <label class="col-md-4 control-label" for="creator">You</label>
                     <div class="col-md-8">
-                        <input id="creator" th:field="*{creator}" type="text" placeholder="Your GitHub Name" class="form-control input-md" required="">
+                        <input id="creator" th:field="*{creator}" type="text" placeholder="Your GitHub Name" class="form-control input-md" required="" readonly>
                     </div>
                 </div>
 
@@ -83,6 +88,7 @@
                     <div class="col-md-8">
                         <input id="teammateOne" th:field="*{teammateOne}" type="text" placeholder="GitHub Name" class="form-control input-md">
                     </div>
+                    <span class="error" th:if="${#fields.hasErrors('teammateOne')}" th:errors="*{teammateOne}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -91,6 +97,7 @@
                     <div class="col-md-8">
                         <input id="teammateTwo" th:field="*{teammateTwo}" type="text" placeholder="GitHub Name" class="form-control input-md">
                     </div>
+                    <span class="error" th:if="${#fields.hasErrors('teammateTwo')}" th:errors="*{teammateTwo}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -99,6 +106,7 @@
                     <div class="col-md-8">
                         <input id="teammateThree" th:field="*{teammateThree}" type="text" placeholder="GitHub Name" class="form-control input-md">
                     </div>
+                    <span class="error" th:if="${#fields.hasErrors('teammateThree')}" th:errors="*{teammateThree}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -107,6 +115,7 @@
                     <div class="col-md-8">
                         <input id="teammateFour" th:field="*{teammateFour}" type="text" placeholder="GitHub Name" class="form-control input-md">
                     </div>
+                    <span class="error" th:if="${#fields.hasErrors('teammateFour')}" th:errors="*{teammateFour}"></span>
                 </div>
 
                 <!-- Button (Double) -->

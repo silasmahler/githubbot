@@ -50,11 +50,7 @@
     <div class="container">
         <h3>Home Page</h3>
         <div sec:authorize="isAuthenticated()">
-            Text visible only to authenticated users.
-            Authenticated username:
-            <div sec:authentication="name"></div>
-            Authenticated user roles:
-            <div sec:authentication="principal.authorities"></div>
+            <div th:text="'Hello ' + ${username}"></div>
         </div>
 
     </div>
