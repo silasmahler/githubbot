@@ -13,5 +13,5 @@ After that change to the root directory and do `gradle bootRun` to start GitHub 
 ## Misc
 Do not commit the `secretConfig.properties` to any public repository or share it with someone. 
 It contains your organizations `client_id` and `client_secret` and an access token of an account
-with admin rights to your organization. Someone could use it to impersonate or to damge you or
+with admin rights to your organization. Someone could use it to impersonate or to damage you or
 your organization.
