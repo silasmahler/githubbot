@@ -38,6 +38,12 @@ public class HomeController {
     @Value("${secret.config.bearer}")
     private String bearer;
 
+    @Value("${secret.config.organization-name}")
+    private String organizationName;
+
+    @Value("${secret.config.template-repository}")
+    private String templateRepo;
+
     private HttpHeaders authHeaders;
     private HttpHeaders authBaptisteHeaders;
     private HttpHeaders authDazzlerHeaders;
@@ -122,14 +128,14 @@ public class HomeController {
     }
 
     private Repository createRepo(Repository repository) throws RepoNameInUseException {
-        String get = "https://api.github.com/repos/dohack-githubbot/test-template";
+        String get = "https://api.github.com/repos/" + organizationName + "/" + templateRepo;
         ResponseEntity<String> getResponse = new RestTemplate().exchange(get, HttpMethod.GET, new HttpEntity(authBaptisteHeaders), String.class);
 
         if (!"true".equals(getFieldFromResponseString(getResponse, "is_template"))) {
             return null;
         }
 
-        String urlOverHttps = "https://api.github.com/repos/dohack-githubbot/" + repository.getRepoName();
+        String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + repository.getRepoName();
         ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(authBaptisteHeaders), String.class);
 
         repository.setUrl(getFieldFromResponseString(response, "html_url"));
@@ -141,7 +147,7 @@ public class HomeController {
                 throw new RepoNameInUseException(repository.getRepoName() + " is already in use.");
             }
 
-            String urlOverHttps = "https://api.github.com/repos/dohack-githubbot/test-template/generate";
+            String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + templateRepo + "/generate";
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("owner", "dohack-githubbot");
             jsonObject.put("name", repository.getRepoName());
@@ -175,7 +181,7 @@ public class HomeController {
      * @return true if the invitation status is pending, false if the user already is a member of the organization
      */
     private InvitationState inviteUserToOrganization(String username) {
-        String urlOverHttps = "https://api.github.com/orgs/dohack-githubbot/memberships/" + username;
+        String urlOverHttps = "https://api.github.com/orgs/" + organizationName + "/memberships/" + username;
         ResponseEntity<String> response
                 = new RestTemplate().exchange(urlOverHttps, HttpMethod.PUT, new HttpEntity(authHeaders), String.class);
 
@@ -190,7 +196,7 @@ public class HomeController {
     }
 
     private void addUserAsCollaborator(String username, String repoName) {
-        String urlOverHttps = "https://api.github.com/repos/dohack-githubbot/" + repoName + "/collaborators/" + username;
+        String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + repoName + "/collaborators/" + username;
         ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.PUT, new HttpEntity(authDazzlerHeaders), String.class);
     }
 
