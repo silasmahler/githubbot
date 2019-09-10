@@ -4,9 +4,10 @@
     <div th:fragment="head(title)">
         <meta charset="UTF-8">
         <title th:text="'DO!Hack - GitHub Bot - ' + ${title}"></title>
-        <link href="//netdna.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet"/>
-        <link rel="icon" type="image/x-icon" href="img/logo-circle.png"/>
+<!--        <link href="//netdna.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet"/>-->
+        <link href="css/bootstrap.min.css" rel="stylesheet"/>
         <link rel="stylesheet" href="css/style.css"/>
+        <link rel="icon" type="image/x-icon" href="img/logo-circle.png"/>
     </div>
 </head>
 <body>
@@ -50,7 +51,11 @@
 </div>
 
 <div th:fragment="footer">
-
+    <footer class="page-footer font-small fixed-bottom footer-grey">
+        <div class="footer-copyright text-center py-3">© 2019 Copyright:
+            <a href="https://dohack.io/"> DO!Hack</a>
+        </div>
+    </footer>
 </div>
 </body>
 </html>
