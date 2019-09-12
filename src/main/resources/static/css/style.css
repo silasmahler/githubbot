@@ -1,0 +1,16 @@
+.vertical-center {
+    margin: auto 0;
+}
+
+a, a:hover, a:visited {
+    cursor: pointer;
+    color: #f28f56;
+}
+
+.footer-grey {
+    background-color: #e9ecef;
+}
+
+.jumbotron {
+    padding: 0.5em;
+}

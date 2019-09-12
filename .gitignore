@@ -1,10 +1,11 @@
-
 \.idea/
-
-backend\.zip
 
 githubbot\.zip
 
 \.vscode/
 
-package-lock\.json
+.gradle
+/.gradle/
+/src/main/resources/secretConfig.properties
+/gradle
+/build

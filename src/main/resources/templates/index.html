@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="fragments/header :: head(title='Index')">...</div>
+</head>
+<body>
+<div>
+    <div th:replace="fragments/header :: header">...</div>
+    <div class="container">
+        <p>Welcome to DO!Hack's GitHub Bot. We coordinate all submissions using a GitHub organization. To Invite you
+            and your teammates to the organization and create a repository for you, follow these simple steps.</p>
+        <ol>
+            <li sec:authorize="!isAuthenticated()"><a href="/login">Sign in</a> with your GitHub account</li>
+            <li>Go to <a href="/createRepository">"Create Repository"</a></li>
+            <li>Fill in your repositories name (your team name)</li>
+            <li>Add a description (optional)</li>
+            <li>Add the Github account names of your teammates, if you are less than 5 people, leaf the other fields empty</li>
+            <li>Click on "Create"</li>
+            <li>Go to your GitHub profile or your email system and accept the invitations for the organization and the repository</li>
+        </ol>
+
+    </div>
+    <div th:replace="fragments/header :: footer">...</div>
+</div>
+</body>
+</html>

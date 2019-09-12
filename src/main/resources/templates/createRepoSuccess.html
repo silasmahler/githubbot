@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <div th:replace="fragments/header :: head(title='Repository Created')">...</div>
+</head>
+<body>
+<div>
+    <div th:replace="fragments/header :: header">...</div>
+
+    <div class="container">
+        <div sec:authorize="isAuthenticated()">
+            <h3>Repository Creation Successful</h3>
+            <p th:text="'Repository Name: ' + ${repository.repoName}"></p>
+            <p th:text="'Description: ' + ${repository.description}"></p>
+            <p>Every GitHub account listed below should have got an invitation to join the DO!Hack GitHub
+                organization and your repository <span th:text="${repository.repoName}"></span>. Use this URL to see
+                your repository after accepting the invitations:
+                <a th:href="${repository.url}" th:text="${repository.url}"></a></p>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Teammate</th>
+                    <th>Organisation Invitation</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th scope="row" th:text="${repository.creator}">Creator</th>
+                    <td th:text="${invitationStates.creator}"></td>
+                </tr>
+                <tr th:if="${repository.teammateOne != null}">
+                    <th scope="row" th:text="${repository.teammateOne}">Teammate 1</th>
+                    <td th:text="${invitationStates.teammateOne}"></td>
+                </tr>
+                <tr th:if="${repository.teammateTwo != null}">
+                    <th scope="row" th:text="${repository.teammateTwo}">Teammate 2</th>
+                    <td th:text="${invitationStates.teammateTwo}"></td>
+                </tr>
+                <tr th:if="${repository.teammateThree != null}">
+                    <th scope="row" th:text="${repository.teammateThree}">Teammate 3</th>
+                    <td th:text="${invitationStates.teammateThree}"></td>
+                </tr>
+                <tr th:if="${repository.teammateFour != null}">
+                    <th scope="row" th:text="${repository.teammateFour}">Teammate 4</th>
+                    <td th:text="${invitationStates.teammateFour}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
