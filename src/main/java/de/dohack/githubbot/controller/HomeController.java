@@ -5,7 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dohack.githubbot.entities.RepoNameInUseException;
 import de.dohack.githubbot.entities.InvitationState;
 import de.dohack.githubbot.entities.Repository;
+import net.minidev.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.configurationprocessor.json.JSONException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
@@ -17,14 +21,17 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.PostConstruct;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
@@ -34,6 +41,8 @@ import java.util.Map;
 @Configuration
 @PropertySource("classpath:secretConfig.properties")
 public class HomeController {
+
+    Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     @Value("${secret.config.bearer}")
     private String bearer;
@@ -81,29 +90,80 @@ public class HomeController {
     }
 
     @PostMapping("/createRepository")
-    public ModelAndView createRepository(@ModelAttribute Repository repository, BindingResult bindingResult, Principal principal) {
+    public ModelAndView createRepository(@Valid Repository repository, BindingResult bindingResult, Principal principal) {
         ModelAndView mv = new ModelAndView();
         mv.addObject("username", setUsername(principal));
+        logger.debug("Create Repository: " + repository);
+
+        if (bindingResult.hasErrors()) {
+            logger.error("errors");
+            mv.setViewName("createRepository");
+            return mv;
+        }
+        boolean teammateOneExists = false;
+        boolean teammateTwoExists = false;
+        boolean teammateThreeExists = false;
+        boolean teammateFourExists = false;
+
+        if (!repository.getTeammateOne().equals("") && !(teammateOneExists = checkUsername(repository.getTeammateOne()))) {
+            bindingResult.addError(new FieldError("repository", "teammateOne", "GitHub name " + repository.getTeammateOne() + " not found."));
+        }
+        if (!repository.getTeammateTwo().equals("") && !(teammateTwoExists = checkUsername(repository.getTeammateTwo()))) {
+            bindingResult.addError(new FieldError("repository", "teammateTwo", "GitHub name " + repository.getTeammateTwo() + " not found."));
+        }
+        if (!repository.getTeammateThree().equals("") && !(teammateThreeExists = checkUsername(repository.getTeammateThree()))) {
+            bindingResult.addError(new FieldError("repository", "teammateThree", "GitHub name " + repository.getTeammateThree() + " not found."));
+        }
+        if (!repository.getTeammateFour().equals("") && !(teammateFourExists = checkUsername(repository.getTeammateFour()))) {
+            bindingResult.addError(new FieldError("repository", "teammateFour", "GitHub name " + repository.getTeammateFour() + " not found."));
+        }
+        if (bindingResult.hasErrors()) {
+            logger.error("errors");
+            mv.setViewName("createRepository");
+            return mv;
+        }
 
         try {
             repository = createRepo(repository);
-        } catch (RepoNameInUseException e) {
-            bindingResult.addError(new ObjectError("repoName", e.getMessage()));
+            logger.debug("Repository created: " + repository.getRepoName());
+        } catch (RepoNameInUseException | NullPointerException e) {
+            bindingResult.addError(new FieldError("repository", "repoName", e.getMessage()));
         }
         if (repository == null) {
-            bindingResult.addError(new ObjectError("repoName", "There were problems creating your repo."));
+            bindingResult.addError(new FieldError("repository", "repoName", "There were problems creating your repo."));
         }
 
         if (repository != null && repository.isCreated()) {
             Map<String, InvitationState> states = new HashMap<>();
+
             states.put("creator", inviteUserToOrganization(repository.getCreator()));
             addUserAsCollaborator(repository.getCreator(), repository.getRepoName());
-            states.put("teammateOne", handleTeammate(repository.getTeammateOne(), repository, "teammateOne", bindingResult));
-            states.put("teammateTwo", handleTeammate(repository.getTeammateTwo(), repository, "teammateTwo", bindingResult));
-            states.put("teammateThree", handleTeammate(repository.getTeammateThree(), repository, "teammateThree", bindingResult));
-            states.put("teammateFour", handleTeammate(repository.getTeammateFour(), repository, "teammateFour", bindingResult));
+            logger.debug("Invite sent to: " + repository.getCreator());
+
+            if (teammateOneExists) {
+                states.put("teammateOne", handleTeammate(repository.getTeammateOne(), repository));
+            } else {
+                repository.setTeammateOne(null);
+            }
+            if (teammateTwoExists) {
+                states.put("teammateTwo", handleTeammate(repository.getTeammateTwo(), repository));
+            } else {
+                repository.setTeammateTwo(null);
+            }
+            if (teammateThreeExists) {
+                states.put("teammateThree", handleTeammate(repository.getTeammateThree(), repository));
+            } else {
+                repository.setTeammateThree(null);
+            }
+            if (teammateFourExists) {
+                states.put("teammateFour", handleTeammate(repository.getTeammateFour(), repository));
+            } else {
+                repository.setTeammateFour(null);
+            }
 
             if (bindingResult.hasErrors()) {
+                logger.error("bindingErrors:");
+                bindingResult.getAllErrors().forEach(objectError -> logger.error("errors: " + objectError.getDefaultMessage()));
                 mv.setViewName("createRepository");
                 return mv;
             }
@@ -111,9 +171,11 @@ public class HomeController {
             mv.setViewName("createRepoSuccess");
             mv.addObject("invitationStates", states);
             mv.addObject("repositoy", repository);
+            logger.debug("Creation of " + repository.getRepoName() + " successful");
             return mv;
         } else {
             mv.setViewName("createRepository");
+            logger.error("errors");
             return mv;
         }
     }
@@ -135,42 +197,47 @@ public class HomeController {
             return null;
         }
 
-        String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + repository.getRepoName();
-        ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(authBaptisteHeaders), String.class);
-
-        repository.setUrl(getFieldFromResponseString(response, "html_url"));
-        repository.setCreated(repository.getUrl() != null && !"".equals(repository.getUrl()));
-        return repository;
-
-        /*try {
-            if (!response.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+        String findRepoUrl = "https://api.github.com/repos/" + organizationName + "/" + repository.getRepoName();
+        try {
+            ResponseEntity<String> findRepoResponse = new RestTemplate().exchange(findRepoUrl, HttpMethod.GET, new HttpEntity(authBaptisteHeaders), String.class);
+            if (!findRepoResponse.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 throw new RepoNameInUseException(repository.getRepoName() + " is already in use.");
             }
-
-            String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + templateRepo + "/generate";
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("owner", "dohack-githubbot");
-            jsonObject.put("name", repository.getRepoName());
-            jsonObject.put("description", repository.getDescription());
-            jsonObject.put("private", false);
-
-            HttpEntity<String> httpEntity = new HttpEntity<String>(jsonObject.toString(), authPreviewHeaders);
-            ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.POST, httpEntity, String.class);
-
-            repository.setUrl(getFieldFromResponseString(response, "html_url", HttpStatus.CREATED));
+            logger.debug("This should not happen.");
             return repository;
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (HttpClientErrorException ex) {
+            if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
+                throw new RepoNameInUseException(repository.getRepoName() + " is already in use.");
+            } else {
+                String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + templateRepo + "/generate";
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("owner", "dohack-githubbot");
+                jsonObject.put("name", repository.getRepoName());
+                jsonObject.put("description", repository.getDescription());
+                jsonObject.put("private", false);
+
+                HttpEntity<String> httpEntity = new HttpEntity<String>(jsonObject.toString(), authBaptisteHeaders);
+                ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.POST, httpEntity, String.class);
+
+                repository.setUrl(getFieldFromResponseString(response, "html_url", HttpStatus.CREATED));
+                repository.setCreated(true);
+                return repository;
+            }
         }
-        return null;*/
     }
 
     private boolean checkUsername(String username) {
         String urlOverHttps = "https://api.github.com/users/" + username;
-        ResponseEntity<String> response
-                = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(authHeaders), String.class);
+        try {
+            ResponseEntity<String> response
+                    = new RestTemplate().exchange(urlOverHttps, HttpMethod.GET, new HttpEntity(authHeaders), String.class);
 
-        return username.equals(getFieldFromResponseString(response, "login"));
+            logger.debug("check username " + username + ": exists");
+            return username.equals(getFieldFromResponseString(response, "login"));
+        } catch (HttpClientErrorException ex) {
+            logger.debug("check username " + username + ": does not exist");
+            return false;
+        }
     }
 
     /**
@@ -208,8 +275,7 @@ public class HomeController {
         if (response.getStatusCode().equals(status)) {
             ObjectMapper mapper = new ObjectMapper();
             try {
-                Map<String, Object> map = mapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {
-                });
+                Map<String, Object> map = mapper.readValue(response.getBody(), new TypeReference<Map<String, Object>>() {});
                 return map.get(fieldName).toString();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -218,23 +284,10 @@ public class HomeController {
         return null;
     }
 
-    private InvitationState handleTeammate(String teammateName, Repository repository, String attributeName, BindingResult bindingResult) {
-        InvitationState state = InvitationState.NONE;
-        if (!"".equals(teammateName) && checkUsername(teammateName)) {
-            state = inviteUserToOrganization(teammateName);
-            addUserAsCollaborator(teammateName, repository.getRepoName());
-        } else {
-            if (!"".equals(teammateName)) {
-                bindingResult.addError(new ObjectError(attributeName, "GitHub name " + teammateName + " does not exist."));
-            }
-            switch (attributeName) {
-                case "teammateOne": repository.setTeammateOne(null); break;
-                case "teammateTwo": repository.setTeammateTwo(null); break;
-                case "teammateThree": repository.setTeammateThree(null); break;
-                case "teammateFour": repository.setTeammateFour(null); break;
-                default: break;
-            }
-        }
+    private InvitationState handleTeammate(String teammateName, Repository repository) {
+        InvitationState state = inviteUserToOrganization(teammateName);
+        addUserAsCollaborator(teammateName, repository.getRepoName());
+        logger.debug("Invite sent to: " + teammateName);
         return state;
     }
 }

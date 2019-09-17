@@ -1,7 +1,12 @@
 package de.dohack.githubbot.entities;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 public class Repository {
 
+    @NotNull
+    @NotEmpty(message = "Repository name must not be empty.")
     private String repoName;
     private String creator;
     private String teammateOne;
