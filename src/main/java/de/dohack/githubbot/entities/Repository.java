@@ -14,6 +14,7 @@ public class Repository {
     private String teammateThree;
     private String teammateFour;
     private String description;
+    private String teamId;
     private boolean created;
     private String url;
 
@@ -75,6 +76,14 @@ public class Repository {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(String teamId) {
+        this.teamId = teamId;
     }
 
     public boolean isCreated() {
