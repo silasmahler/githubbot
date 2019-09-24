@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.dohack.githubbot.entities.InvitationState;
 import de.dohack.githubbot.entities.RepoNameInUseException;
+import de.dohack.githubbot.entities.RepoNotTemplateException;
 import de.dohack.githubbot.entities.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,9 @@ public class HomeController {
 
     @Value("${secret.config.template-repository}")
     private String templateRepo;
+
+    @Value("${secret.config.template-owner}")
+    private String templateOwner;
 
     private HttpHeaders authHeaders;
     private HttpHeaders authBaptisteHeaders;
@@ -131,54 +135,42 @@ public class HomeController {
         }
 
         try {
-            repository = createRepo(repository);
+            createRepo(repository);
             logger.debug("Repository created: " + repository.getRepoName());
-        } catch (RepoNameInUseException | NullPointerException | JSONException e) {
-            bindingResult.addError(new FieldError("repository", "repoName", e.getMessage()));
-        }
-        if (repository == null) {
-            bindingResult.addError(new FieldError("repository", "repoName", "There were problems creating your repo."));
+        } catch (RepoNameInUseException | RepoNotTemplateException | NullPointerException | JSONException e) {
+            logger.error("error: " + e.getClass() + ": " + e.getMessage());
         }
 
-        if (repository != null && repository.isCreated()) {
-            ArrayList<String> maintainers = new ArrayList<>();
+        if (repository.isCreated()) {
             Map<String, InvitationState> states = new HashMap<>();
 
             try {
                 states.put("creator", inviteUserToOrganization(repository.getCreator()));
                 addUserAsCollaborator(repository.getCreator(), repository.getRepoName(), "admin");
-                maintainers.add(repository.getCreator());
                 logger.debug("Invite sent to: " + repository.getCreator() + " with admin permission.");
 
                 if (teammateOneExists) {
                     states.put("teammateOne", handleTeammate(repository.getTeammateOne(), repository));
-                    maintainers.add(repository.getTeammateOne());
                 } else {
                     repository.setTeammateOne(null);
                 }
                 if (teammateTwoExists) {
                     states.put("teammateTwo", handleTeammate(repository.getTeammateTwo(), repository));
-                    maintainers.add(repository.getTeammateTwo());
                 } else {
                     repository.setTeammateTwo(null);
                 }
                 if (teammateThreeExists) {
                     states.put("teammateThree", handleTeammate(repository.getTeammateThree(), repository));
-                    maintainers.add(repository.getTeammateThree());
                 } else {
                     repository.setTeammateThree(null);
                 }
                 if (teammateFourExists) {
                     states.put("teammateFour", handleTeammate(repository.getTeammateFour(), repository));
-                    maintainers.add(repository.getTeammateFour());
                 } else {
                     repository.setTeammateFour(null);
                 }
-
-                addTeam(repository, maintainers);
-                logger.debug("Maintainers added: " + maintainers);
             } catch (JSONException e) {
-                bindingResult.addError(new ObjectError("repoName", e.getMessage()));
+                logger.error("JSONException: " + e.getMessage());
             }
 
             if (bindingResult.hasErrors()) {
@@ -209,12 +201,12 @@ public class HomeController {
         return username;
     }
 
-    private Repository createRepo(Repository repository) throws RepoNameInUseException, JSONException {
+    private void createRepo(Repository repository) throws RepoNameInUseException, RepoNotTemplateException, JSONException {
         String get = "https://api.github.com/repos/" + organizationName + "/" + templateRepo;
         ResponseEntity<String> getResponse = new RestTemplate().exchange(get, HttpMethod.GET, new HttpEntity(authBaptisteHeaders), String.class);
 
         if (!"true".equals(getFieldFromResponseString(getResponse, "is_template"))) {
-            return null;
+            throw new RepoNotTemplateException(templateRepo + " is not a template repository");
         }
 
         String findRepoUrl = "https://api.github.com/repos/" + organizationName + "/" + repository.getRepoName();
@@ -224,14 +216,13 @@ public class HomeController {
                 throw new RepoNameInUseException(repository.getRepoName() + " is already in use.");
             }
             logger.debug("This should not happen.");
-            return repository;
         } catch (HttpClientErrorException ex) {
             if (!ex.getStatusCode().equals(HttpStatus.NOT_FOUND)) {
                 throw new RepoNameInUseException(repository.getRepoName() + " is already in use.");
             } else {
                 String urlOverHttps = "https://api.github.com/repos/" + organizationName + "/" + templateRepo + "/generate";
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("owner", "dohack-githubbot");
+                jsonObject.put("owner", organizationName);
                 jsonObject.put("name", repository.getRepoName());
                 jsonObject.put("description", repository.getDescription());
                 jsonObject.put("private", false);
@@ -241,7 +232,6 @@ public class HomeController {
 
                 repository.setUrl(getFieldFromResponseString(response, "html_url", HttpStatus.CREATED));
                 repository.setCreated(true);
-                return repository;
             }
         }
     }
@@ -311,23 +301,6 @@ public class HomeController {
             }
         }
         return null;
-    }
-
-    private void addTeam(Repository repository, ArrayList<String> maintainers) throws JSONException {
-        String urlOverHttps = "https://api.github.com/orgs/" + organizationName + "/teams";
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("name", repository.getRepoName());
-        jsonObject.put("maintainers[]", new JSONArray(maintainers));
-        String[] repos = {organizationName + "/" + repository.getRepoName()};
-        jsonObject.put("repo_names[]", new JSONArray(repos));
-        jsonObject.put("privacy", "closed");
-
-        HttpEntity<String> httpEntity = new HttpEntity<>(jsonObject.toString(), authHellcatHeaders);
-        ResponseEntity<String> response = new RestTemplate().exchange(urlOverHttps, HttpMethod.POST, httpEntity, String.class);
-
-        if (response.getStatusCode().equals(HttpStatus.CREATED)) {
-            repository.setTeamId(getFieldFromResponseString(response, "id", HttpStatus.CREATED));
-        }
     }
 
     private InvitationState handleTeammate(String teammateName, Repository repository) throws JSONException {
