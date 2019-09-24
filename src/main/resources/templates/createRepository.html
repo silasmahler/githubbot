@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <div th:replace="fragments/header :: head(title='Create Repository')">...</div>
 </head>
@@ -22,9 +22,9 @@
                     <label class="col-md-4 control-label" for="repoName">Team and Repository Name *</label>
                     <div class="col-md-8">
                         <input id="repoName" th:field="*{repoName}" type="text" placeholder="Team and Repository Name" class="form-control input-md" required="">
+                        <span class="alert alert-danger alert-inline" th:if="${#fields.hasErrors('repoName')}" th:errors="*{repoName}"></span>
                         <span class="form-text text-muted">Your Team will be referenced by this name during the hackathon.</span>
                     </div>
-                    <span class="error" th:if="${#fields.hasErrors('repoName')}" th:errors="*{repoName}"></span>
                 </div>
 
                 <!-- Textarea -->
@@ -50,9 +50,9 @@
                     <label class="col-md-4 control-label" for="teammateOne">Teammate 2</label>
                     <div class="col-md-8">
                         <input id="teammateOne" th:field="*{teammateOne}" type="text" placeholder="GitHub Name" class="form-control input-md">
+                        <span class="alert alert-danger alert-inline" th:if="${#fields.hasErrors('teammateOne')}" th:errors="*{teammateOne}"></span>
                         <span class="form-text text-muted">Required if your Team consists of 2 people.</span>
                     </div>
-                    <span class="error" th:if="${#fields.hasErrors('teammateOne')}" th:errors="*{teammateOne}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -60,9 +60,9 @@
                     <label class="col-md-4 control-label" for="teammateTwo">Teammate 3</label>
                     <div class="col-md-8">
                         <input id="teammateTwo" th:field="*{teammateTwo}" type="text" placeholder="GitHub Name" class="form-control input-md">
+                        <span class="alert alert-danger alert-inline" th:if="${#fields.hasErrors('teammateTwo')}" th:errors="*{teammateTwo}"></span>
                         <span class="form-text text-muted">Required if your Team consists of 3 people.</span>
                     </div>
-                    <span class="error" th:if="${#fields.hasErrors('teammateTwo')}" th:errors="*{teammateTwo}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -70,9 +70,9 @@
                     <label class="col-md-4 control-label" for="teammateThree">Teammate 4</label>
                     <div class="col-md-8">
                         <input id="teammateThree" th:field="*{teammateThree}" type="text" placeholder="GitHub Name" class="form-control input-md">
+                        <span class="alert alert-danger alert-inline" th:if="${#fields.hasErrors('teammateThree')}" th:errors="*{teammateThree}"></span>
                         <span class="form-text text-muted">Required if your Team consists of 4 people.</span>
                     </div>
-                    <span class="error" th:if="${#fields.hasErrors('teammateThree')}" th:errors="*{teammateThree}"></span>
                 </div>
 
                 <!-- Text input-->
@@ -80,9 +80,9 @@
                     <label class="col-md-4 control-label" for="teammateFour">Teammate 5</label>
                     <div class="col-md-8">
                         <input id="teammateFour" th:field="*{teammateFour}" type="text" placeholder="GitHub Name" class="form-control input-md">
+                        <span class="alert alert-danger alert-inline" th:if="${#fields.hasErrors('teammateFour')}" th:errors="*{teammateFour}"></span>
                         <span class="form-text text-muted">Required if your Team consists of 5 people.</span>
                     </div>
-                    <span class="error" th:if="${#fields.hasErrors('teammateFour')}" th:errors="*{teammateFour}"></span>
                 </div>
 
                 <p class="col-md-8">* Required Field</p>

@@ -9,3 +9,4 @@ githubbot\.zip
 /src/main/resources/secretConfig.properties
 /gradle
 /build
+/out/

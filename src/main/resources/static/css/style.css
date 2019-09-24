@@ -14,3 +14,7 @@ a, a:hover, a:visited {
 .jumbotron {
     padding: 0.5em;
 }
+
+.alert-inline {
+    padding: 0;
+}
